@@ -4,6 +4,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import org.doh.Constants.Companion.ACCEPT
 import org.doh.Constants.Companion.APPLICATION_DNS_JSON
 import org.doh.pojo.DnsQuery
@@ -11,7 +12,7 @@ import org.doh.pojo.DnsResponse
 
 abstract class DnsResolver {
     private val client = OkHttpClient()
-    private val moshi: Moshi = Moshi.Builder().build()
+    private val moshi: Moshi = Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build()
     private val jsonAdapter: JsonAdapter<DnsResponse> = moshi.adapter<DnsResponse>(DnsResponse::class.java)
 
     abstract fun getResolverUrl(): String
@@ -29,9 +30,10 @@ abstract class DnsResolver {
 
         val response = client.newCall(request).execute()
         if (response.code == 200) {
-            response.body?.let { return jsonAdapter.fromJson(it.string()) }
-        } else {
-            return null
+            val body = response.body?.string()
+            return body?.let { jsonAdapter.fromJson(it) }
         }
+
+        return null
     }
 }
