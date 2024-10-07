@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "org.valarpirai"
-version = "1.0.3"
+version = "1.0.0"
 
 repositories {
     mavenCentral()
