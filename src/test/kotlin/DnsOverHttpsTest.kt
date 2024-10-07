@@ -67,8 +67,6 @@ class DnsOverHttpsTest {
         val types = listOf(RecordType.A, RecordType.AAAA, RecordType.MX, RecordType.TXT, RecordType.NS, RecordType.SOA)
 
         types.forEach {
-            println(it.toString())
-            println(it.type)
             val resolver = CloudFlareDnsResolver()
             val query = DnsQuery("google.com", it)
             val response = resolver.resolve(query)!!
@@ -84,8 +82,6 @@ class DnsOverHttpsTest {
         val types = listOf(RecordType.A, RecordType.AAAA, RecordType.MX, RecordType.TXT, RecordType.NS, RecordType.SOA)
 
         types.forEach {
-            println(it.toString())
-            println(it.type)
             val resolver = GoogleDnsResolver()
             val query = DnsQuery("google.com", it)
             val response = resolver.resolve(query)!!

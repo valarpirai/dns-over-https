@@ -5,8 +5,12 @@ import okhttp3.Request
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import org.doh.Constants.Companion.ACCEPT
 import org.doh.Constants.Companion.APPLICATION_DNS_JSON
+import org.doh.Constants.Companion.NAME
+import org.doh.Constants.Companion.TYPE
 import org.doh.pojo.DnsQuery
 import org.doh.pojo.DnsResponse
 
@@ -18,13 +22,17 @@ abstract class DnsResolver {
     abstract fun getResolverUrl(): String
 
     fun resolve(query: DnsQuery): DnsResponse? {
-        val url = "${getResolverUrl()}?type=${query.type.toString()}&name=${query.name}"
-        return callApi(url)
+        val httpUrl = getResolverUrl().toHttpUrlOrNull()!!.newBuilder()
+            .addQueryParameter(NAME, query.name)
+            .addQueryParameter(TYPE, query.type.toString())
+        return callApi(httpUrl.toString())
     }
 
     fun resolve(name: String, type: String): DnsResponse? {
-        val url = "${getResolverUrl()}?type=${type}&name=${name}"
-        return callApi(url)
+        val httpUrl = getResolverUrl().toHttpUrlOrNull()!!.newBuilder()
+            .addQueryParameter(NAME, name)
+            .addQueryParameter(TYPE, type)
+        return callApi(httpUrl.toString())
     }
 
     private fun callApi(url: String): DnsResponse? {
