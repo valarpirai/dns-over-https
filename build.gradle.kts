@@ -28,9 +28,6 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 }
-kotlin {
-    jvmToolchain(11)
-}
 
 tasks.withType<ShadowJar>() {
     // Minimizing a shadow JAR
