@@ -17,12 +17,17 @@ abstract class DnsResolver {
 
     abstract fun getResolverUrl(): String
 
-    private fun buildURL(query: DnsQuery): String {
-        return "${getResolverUrl()}?type=${query.type.toString()}&name=${query.name}"
+    fun resolve(query: DnsQuery): DnsResponse? {
+        val url = "${getResolverUrl()}?type=${query.type.toString()}&name=${query.name}"
+        return callApi(url)
     }
 
-    fun resolve(query: DnsQuery): DnsResponse? {
-        val url = buildURL(query)
+    fun resolve(name: String, type: String): DnsResponse? {
+        val url = "${getResolverUrl()}?type=${type}&name=${name}"
+        return callApi(url)
+    }
+
+    private fun callApi(url: String): DnsResponse? {
         val request = Request.Builder()
             .url(url)
             .addHeader(ACCEPT, APPLICATION_DNS_JSON)

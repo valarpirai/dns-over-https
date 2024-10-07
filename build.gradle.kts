@@ -35,6 +35,6 @@ kotlin {
 tasks.withType<ShadowJar>() {
     // Minimizing a shadow JAR
     minimize()
-    relocate("okhttp3", "org.doh.shaded.okhttp3")
-    relocate("okio", "org.doh.shaded.okio")
+    relocate("okhttp3", "org.valarpirai.shaded.okhttp3")
+    relocate("okio", "org.valarpirai.shaded.okio")
 }

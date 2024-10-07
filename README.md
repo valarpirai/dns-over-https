@@ -1,2 +1,2 @@
 # dnsjava
-DNS over HTTP
+DNS over HTTPS

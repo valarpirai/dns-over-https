@@ -17,29 +17,90 @@ class DnsOverHttpsTest {
         val query = DnsQuery("google.com", RecordType.A)
         val response = resolver.resolve(query)!!
         Assertions.assertTrue(response.Question.isNotEmpty())
-        Assertions.assertEquals(response.Question.first().name, "google.com")
-        Assertions.assertEquals(response.Answer?.first()?.name, "google.com")
-        Assertions.assertEquals(response.Answer?.first()?.type, RecordType.A.type)
+        Assertions.assertEquals("google.com", response.Question.first().name)
+        Assertions.assertEquals("google.com", response.Answer?.first()?.name)
+        Assertions.assertEquals(RecordType.A.type, response.Answer?.first()?.type)
     }
 
     @Test
-    fun test_cloudFlareResolver_MX() {
+    fun test_cloudFlareResolver_other_types() {
         val resolver = CloudFlareDnsResolver()
-        val query = DnsQuery("google.com", RecordType.MX)
-        val response = resolver.resolve(query)!!
+        val response = resolver.resolve("google.com", "A")!!
         Assertions.assertTrue(response.Question.isNotEmpty())
-        Assertions.assertEquals(response.Question.first().name, "google.com")
-        Assertions.assertEquals(response.Answer?.first()?.name, "google.com")
-        Assertions.assertEquals(response.Answer?.first()?.type, RecordType.MX.type)
+        Assertions.assertEquals("google.com", response.Question.first().name)
+        Assertions.assertEquals("google.com", response.Answer?.first()?.name)
+        Assertions.assertEquals(RecordType.A.type, response.Answer?.first()?.type)
     }
 
     @Test
-    fun test_GoogleFlareResolver() {
-        val resolver = GoogleDnsResolver()
-        val query = DnsQuery("google.com", RecordType.A)
+    fun test_cloudFlareResolver_unknown_type() {
+        val resolver = CloudFlareDnsResolver()
+        val response = resolver.resolve("google.com", "test")
+        Assertions.assertNull(response)
+    }
+
+    @Test
+    fun test_cloudFlareResolver_CNAME() {
+        val resolver = CloudFlareDnsResolver()
+        val query = DnsQuery("google.com", RecordType.CNAME)
         val response = resolver.resolve(query)!!
         Assertions.assertTrue(response.Question.isNotEmpty())
-        Assertions.assertEquals(response.Question.first().name, "google.com.")
+        Assertions.assertEquals("google.com", response.Question.first().name)
+        Assertions.assertNull(response.Answer)
+        Assertions.assertEquals("google.com", response.Authority?.first()?.name)
+        Assertions.assertEquals(RecordType.SOA.type, response.Authority?.first()?.type)
+    }
+
+    @Test
+    fun test_cloudFlareResolver_SOA() {
+        val resolver = CloudFlareDnsResolver()
+        val query = DnsQuery("google.com", RecordType.SOA)
+        val response = resolver.resolve(query)!!
+        Assertions.assertTrue(response.Question.isNotEmpty())
+        Assertions.assertEquals("google.com", response.Question.first().name)
+        Assertions.assertEquals("google.com", response.Answer?.first()?.name)
+        Assertions.assertEquals(RecordType.SOA.type, response.Answer?.first()?.type)
+    }
+
+    @Test
+    fun test_cloudFlareResolver_all_types() {
+        val types = listOf(RecordType.A, RecordType.AAAA, RecordType.MX, RecordType.TXT, RecordType.NS, RecordType.SOA)
+
+        types.forEach {
+            println(it.toString())
+            println(it.type)
+            val resolver = CloudFlareDnsResolver()
+            val query = DnsQuery("google.com", it)
+            val response = resolver.resolve(query)!!
+            Assertions.assertTrue(response.Question.isNotEmpty())
+            Assertions.assertEquals("google.com", response.Question.first().name)
+            Assertions.assertEquals("google.com", response.Answer?.first()?.name)
+            Assertions.assertEquals(it.type, response.Answer?.first()?.type)
+        }
+    }
+
+    @Test
+    fun test_GoogleResolver_All_types() {
+        val types = listOf(RecordType.A, RecordType.AAAA, RecordType.MX, RecordType.TXT, RecordType.NS, RecordType.SOA)
+
+        types.forEach {
+            println(it.toString())
+            println(it.type)
+            val resolver = GoogleDnsResolver()
+            val query = DnsQuery("google.com", it)
+            val response = resolver.resolve(query)!!
+            Assertions.assertTrue(response.Question.isNotEmpty())
+            Assertions.assertEquals("google.com.", response.Question.first().name)
+            Assertions.assertEquals("google.com.", response.Answer?.first()?.name)
+            Assertions.assertEquals(it.type, response.Answer?.first()?.type)
+        }
+    }
+
+    @Test
+    fun test_GoogleResolver_unknown_type() {
+        val resolver = GoogleDnsResolver()
+        val response = resolver.resolve("google.com", "test")
+        Assertions.assertNull(response)
     }
 
     @Test
