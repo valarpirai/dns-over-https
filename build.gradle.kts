@@ -36,3 +36,25 @@ tasks.withType<ShadowJar>() {
     relocate("okio", "org.valarpirai.shaded.okio")
     relocate("com.squareup.moshi", "org.valarpirai.shaded.com.squareup.moshi")
 }
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/valarpirai/dns-over-https")
+            credentials {
+                username = project.findProperty("gpr.user") as String? ?: System.getenv("USERNAME")
+                password = project.findProperty("gpr.key") as String? ?: System.getenv("TOKEN")
+            }
+        }
+    }
+    publications {
+        create<MavenPublication>("maven") {
+            groupId = group as String
+            artifactId = "dns-over-https"
+            version = version
+
+            from(components["java"])
+        }
+    }
+}
