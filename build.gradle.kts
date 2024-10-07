@@ -37,4 +37,5 @@ tasks.withType<ShadowJar>() {
     minimize()
     relocate("okhttp3", "org.valarpirai.shaded.okhttp3")
     relocate("okio", "org.valarpirai.shaded.okio")
+    relocate("com.squareup.moshi", "org.valarpirai.shaded.com.squareup.moshi")
 }
