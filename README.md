@@ -19,7 +19,7 @@ Fetch DNS A(IPv4) Record for `google.com` using DnsQuery. Create DnsQuery and re
     val resolver = CloudFlareDnsResolver()
     val query = DnsQuery("google.com", RecordType.A)
     val response = resolver.resolve(query)
-    Assertions.assertNull(response)
+    Assertions.assertNotNull(response)
     Assertions.assertTrue(response.Question.isNotEmpty())
     Assertions.assertEquals("google.com", response.Question.first().name)
     Assertions.assertEquals("google.com", response.Answer?.first()?.name)
@@ -31,7 +31,7 @@ Fetch DNS A(IPv4) Record for `google.com` without using DnsQuery. Directly pass 
 ```
     val resolver = CloudFlareDnsResolver()
     val response = resolver.resolve("google.com", "A")
-    Assertions.assertNull(response)
+    Assertions.assertNotNull(response)
 ```
 
 ### Response
