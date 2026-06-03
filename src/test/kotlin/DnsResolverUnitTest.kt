@@ -94,4 +94,112 @@ class DnsResolverUnitTest {
         Assertions.assertNull(response!!.Answer)
         Assertions.assertEquals("ns1.example.com", response.Authority!!.first().data)
     }
+
+    @Test
+    fun resolve_string_overload_sends_correct_query_parameters() {
+        val body = """{"Status":0,"TC":false,"RD":true,"RA":true,"AD":false,"CD":false,
+            |"Question":[{"name":"example.com","type":15}],"Answer":null}
+        """.trimMargin()
+        server.enqueue(MockResponse().setResponseCode(200).setBody(body)
+            .addHeader("Content-Type", "application/dns-json"))
+
+        resolver.resolve("example.com", "MX")
+
+        val request = server.takeRequest()
+        Assertions.assertEquals("example.com", request.requestUrl?.queryParameter("name"))
+        Assertions.assertEquals("MX", request.requestUrl?.queryParameter("type"))
+    }
+
+    @Test
+    fun resolve_returns_null_on_empty_body() {
+        server.enqueue(MockResponse().setResponseCode(200).setBody("")
+            .addHeader("Content-Type", "application/dns-json"))
+
+        val response = resolver.resolve("example.com", "A")
+
+        Assertions.assertNull(response)
+    }
+
+    @Test
+    fun resolve_throws_on_invalid_url_via_dnsquery_overload() {
+        val badResolver = object : DnsResolver() {
+            override fun getResolverUrl() = "not a valid url"
+        }
+        Assertions.assertThrows(IllegalStateException::class.java) {
+            badResolver.resolve(DnsQuery("example.com", RecordType.A))
+        }
+    }
+
+    @Test
+    fun jsonAdapter_parses_response_with_additional_section() {
+        val body = """{"Status":0,"TC":false,"RD":true,"RA":true,"AD":false,"CD":false,
+            |"Question":[{"name":"example.com","type":1}],
+            |"Answer":[{"name":"example.com","type":1,"TTL":300,"data":"93.184.216.34"}],
+            |"Additional":[{"name":"ns1.example.com","type":1,"TTL":3600,"data":"205.251.196.1"}]}
+        """.trimMargin()
+
+        val response: DnsResponse? = DnsResolver.jsonAdapter.fromJson(body)
+
+        Assertions.assertNotNull(response)
+        Assertions.assertEquals("205.251.196.1", response!!.Additional!!.first().data)
+    }
+
+    @Test
+    fun jsonAdapter_parses_response_with_comment_field() {
+        val body = """{"Status":3,"TC":false,"RD":true,"RA":true,"AD":false,"CD":false,
+            |"Question":[{"name":"nonexistent.example","type":1}],
+            |"Comment":"NXDOMAIN"}
+        """.trimMargin()
+
+        val response: DnsResponse? = DnsResolver.jsonAdapter.fromJson(body)
+
+        Assertions.assertNotNull(response)
+        Assertions.assertEquals(3, response!!.Status)
+        Assertions.assertEquals("NXDOMAIN", response.Comment)
+        Assertions.assertNull(response.Answer)
+    }
+
+    @Test
+    fun jsonAdapter_parses_response_with_empty_answer_list() {
+        val body = """{"Status":0,"TC":false,"RD":true,"RA":true,"AD":false,"CD":false,
+            |"Question":[{"name":"example.com","type":1}],
+            |"Answer":[]}
+        """.trimMargin()
+
+        val response: DnsResponse? = DnsResolver.jsonAdapter.fromJson(body)
+
+        Assertions.assertNotNull(response)
+        Assertions.assertNotNull(response!!.Answer)
+        Assertions.assertTrue(response.Answer!!.isEmpty())
+    }
+
+    @Test
+    fun resolve_all_record_types_send_correct_type_string() {
+        val cases = mapOf(
+            RecordType.A to "A",
+            RecordType.NS to "NS",
+            RecordType.CNAME to "CNAME",
+            RecordType.SOA to "SOA",
+            RecordType.PTR to "PTR",
+            RecordType.MX to "MX",
+            RecordType.TXT to "TXT",
+            RecordType.AAAA to "AAAA",
+            RecordType.SRV to "SRV",
+            RecordType.DS to "DS",
+            RecordType.TLSA to "TLSA",
+            RecordType.CAA to "CAA"
+        )
+        val emptyBody = """{"Status":0,"TC":false,"RD":true,"RA":true,"AD":false,"CD":false,
+            |"Question":[{"name":"example.com","type":1}],"Answer":null}
+        """.trimMargin()
+
+        cases.forEach { (recordType, expectedTypeString) ->
+            server.enqueue(MockResponse().setResponseCode(200).setBody(emptyBody)
+                .addHeader("Content-Type", "application/dns-json"))
+            resolver.resolve(DnsQuery("example.com", recordType))
+            val request = server.takeRequest()
+            Assertions.assertEquals(expectedTypeString, request.requestUrl?.queryParameter("type"),
+                "RecordType.$recordType should send type=$expectedTypeString")
+        }
+    }
 }

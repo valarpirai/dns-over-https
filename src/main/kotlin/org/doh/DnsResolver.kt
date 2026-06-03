@@ -56,7 +56,7 @@ abstract class DnsResolver(
         val response = client.newCall(request).execute()
         if (response.code == 200) {
             val body = response.body?.string()
-            return body?.let { jsonAdapter.fromJson(it) }
+            return body?.takeIf { it.isNotBlank() }?.let { jsonAdapter.fromJson(it) }
         }
 
         return null
