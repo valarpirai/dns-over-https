@@ -9,5 +9,10 @@ enum class RecordType(val type: Int) {
     SOA(6),
     MX(15),
     TXT(16),
-    AAAA(28)
+    AAAA(28),
+    PTR(12),
+    SRV(33),
+    DS(43),
+    TLSA(52),
+    CAA(257)
 }
