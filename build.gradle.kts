@@ -29,6 +29,7 @@ dependencies {
     implementation("com.squareup.moshi:moshi-kotlin:1.15.1")
 
     testImplementation(kotlin("test"))
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
 }
 
 tasks.test {
