@@ -12,11 +12,18 @@ import org.doh.Constants.Companion.NAME
 import org.doh.Constants.Companion.TYPE
 import org.doh.pojo.DnsQuery
 import org.doh.pojo.DnsResponse
+import java.util.concurrent.TimeUnit
 
 abstract class DnsResolver {
-    private val client = OkHttpClient()
-    private val moshi: Moshi = Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build()
-    private val jsonAdapter: JsonAdapter<DnsResponse> = moshi.adapter<DnsResponse>(DnsResponse::class.java)
+    companion object {
+        private val client = OkHttpClient.Builder()
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(10, TimeUnit.SECONDS)
+            .writeTimeout(10, TimeUnit.SECONDS)
+            .build()
+        private val moshi: Moshi = Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build()
+        private val jsonAdapter: JsonAdapter<DnsResponse> = moshi.adapter(DnsResponse::class.java)
+    }
 
     abstract fun getResolverUrl(): String
 
