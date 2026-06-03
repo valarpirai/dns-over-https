@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm") version "2.0.0"
     `maven-publish`
-    id("com.github.johnrengelman.shadow") version "7.0.0"
+    id("com.gradleup.shadow") version "8.3.5"
 }
 
 group = "org.valarpirai"
