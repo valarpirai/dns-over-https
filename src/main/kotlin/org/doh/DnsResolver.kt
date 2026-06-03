@@ -21,17 +21,21 @@ abstract class DnsResolver {
     abstract fun getResolverUrl(): String
 
     fun resolve(query: DnsQuery): DnsResponse? {
-        val httpUrl = getResolverUrl().toHttpUrlOrNull()!!.newBuilder()
+        val httpUrl = getResolverUrl().toHttpUrlOrNull()
+            ?: throw IllegalStateException("Invalid resolver URL: ${getResolverUrl()}")
+        val url = httpUrl.newBuilder()
             .addQueryParameter(NAME, query.name)
             .addQueryParameter(TYPE, query.type.toString())
-        return callApi(httpUrl.toString())
+        return callApi(url.toString())
     }
 
     fun resolve(name: String, type: String): DnsResponse? {
-        val httpUrl = getResolverUrl().toHttpUrlOrNull()!!.newBuilder()
+        val httpUrl = getResolverUrl().toHttpUrlOrNull()
+            ?: throw IllegalStateException("Invalid resolver URL: ${getResolverUrl()}")
+        val url = httpUrl.newBuilder()
             .addQueryParameter(NAME, name)
             .addQueryParameter(TYPE, type)
-        return callApi(httpUrl.toString())
+        return callApi(url.toString())
     }
 
     private fun callApi(url: String): DnsResponse? {
